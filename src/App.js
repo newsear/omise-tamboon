@@ -1,111 +1,111 @@
-import React, { Component } from 'react';
-import fetch from 'isomorphic-fetch';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { connect } from 'react-redux';
-import { summaryDonations } from './helpers';
+import { Card } from './components/card';
 
-const Card = styled.div`
-  margin: 10px;
-  border: 1px solid #ccc;
+const HeaderText = styled.h1`
+  text-align: center;
 `;
 
-export default connect((state) => state)(
-  class App extends Component {
-    state = {
-      charities: [],
-      selectedAmount: 10,
-    };
+const ParagraphText = styled.p`
+  text-align: center;
+`;
 
-    componentDidMount() {
-      const self = this;
-      fetch('http://localhost:3001/charities')
-        .then(function (resp) {
-          return resp.json();
-        })
-        .then(function (data) {
-          self.setState({ charities: data });
-        });
+const CardContainer = styled.div`
+  display: flex;
 
-      fetch('http://localhost:3001/payments')
-        .then(function (resp) {
-          return resp.json();
-        })
-        .then(function (data) {
-          self.props.dispatch({
-            type: 'UPDATE_TOTAL_DONATE',
-            amount: summaryDonations(data.map((item) => item.amount)),
-          });
-        });
-    }
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    padding: 2.5% 20%;
 
-    render() {
-      const self = this;
-      const cards = this.state.charities.map(function (item, i) {
-        const payments = [10, 20, 50, 100, 500].map((amount, j) => (
-          <label key={j}>
-            <input
-              type="radio"
-              name="payment"
-              onClick={function () {
-                self.setState({ selectedAmount: amount });
-              }}
-            />
-            {amount}
-          </label>
-        ));
-
-        return (
-          <Card key={i}>
-            <p>{item.name}</p>
-            {payments}
-            <button
-              onClick={handlePay.call(
-                self,
-                item.id,
-                self.state.selectedAmount,
-                item.currency
-              )}
-            >
-              Pay
-            </button>
-          </Card>
-        );
-      });
-
-      const style = {
-        color: 'red',
-        margin: '1em 0',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        textAlign: 'center',
-      };
-
-      const donate = this.props.donate;
-      const message = this.props.message;
-
-      return (
-        <div>
-          <h1>Tamboon React</h1>
-          <p>All donations: {donate}</p>
-          <p style={style}>{message}</p>
-          {cards}
-        </div>
-      );
+    > * {
+      flex: 0 0 80%;
+      margin: 5%;
     }
   }
-);
 
-/**
- * Handle pay button
- * 
- * @param {*} The charities Id
- * @param {*} amount The amount was selected
- * @param {*} currency The currency
- * 
- * @example
- * fetch('http://localhost:3001/payments', {
+  @media (min-width: 1001px) {
+    flex-wrap: wrap;
+    margin: auto;
+    max-width: 1000px;
+    position: relative;
+
+    > * {
+      flex: 0 0 45%;
+      margin: 2.5%;
+    }
+  }
+`;
+
+const API_URL = 'http://localhost:3001';
+
+const App = () => {
+  const [charities, setCharities] = useState([]);
+  const [currentDisplayOverlayId, setCurrentDisplayOverlayId] = useState();
+  const [totalDonation, setTotalDonation] = useState(0);
+  const [infoMessage, setInfoMessage] = useState();
+
+  useEffect(() => {
+    if (infoMessage) {
+      const timer = setTimeout(() => {
+        setInfoMessage(undefined);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [infoMessage]);
+
+  useEffect(() => {
+    fetchCharities();
+    fetchPayments();
+  }, []);
+
+  const fetchCharities = () => {
+    fetch(`${API_URL}/charities`)
+      .then((resp) => resp.json())
+      .then((charities) => setCharities(charities));
+  };
+
+  const fetchPayments = () => {
+    fetch(`${API_URL}/payments`)
+      .then((resp) => resp.json())
+      .then((payments) => {
+        const totalDonation = payments.reduce(
+          (totalDonation, payment) => (totalDonation += payment.amount),
+          0
+        );
+        setTotalDonation(totalDonation);
+      });
+  };
+
+  const handlePay = async (charityId, payAmount) => {
+    await fetch(`${API_URL}/payments`, {
       method: 'POST',
-      body: `{ "charitiesId": ${id}, "amount": ${amount}, "currency": "${currency}" }`,
-    })
- */
-function handlePay(id, amount, currency) {}
+      headers: { 'content-type': 'application/json' },
+      body: `{ "charitiesId": ${charityId}, "amount": ${payAmount}, "currency": "THB" }`,
+    });
+    fetchPayments();
+    setInfoMessage('Thank you for your donation');
+  };
+
+  return (
+    <div>
+      <HeaderText>Tamboon React</HeaderText>
+      <ParagraphText>All donations: {totalDonation}</ParagraphText>
+      <ParagraphText>{infoMessage}</ParagraphText>
+      <CardContainer>
+        {charities.map((charity) => (
+          <Card
+            displayOverlay={charity.id === currentDisplayOverlayId}
+            id={charity.id}
+            imageName={charity.image}
+            key={charity.id}
+            onSubmit={(payAmount) => handlePay(charity.id, payAmount)}
+            setDisplayOverlay={setCurrentDisplayOverlayId}
+            title={charity.name}
+          />
+        ))}
+      </CardContainer>
+    </div>
+  );
+};
+
+export default App;
