@@ -28,6 +28,13 @@ const config = {
           loader: 'babel-loader',
         },
       },
+      {
+        test: /\.jpg$/,
+        exclude: [/node_modules/],
+        use: {
+          loader: 'url-loader',
+        },
+      },
     ],
   },
 
