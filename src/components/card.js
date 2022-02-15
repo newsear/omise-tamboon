@@ -86,7 +86,7 @@ const Radio = styled.label`
   margin: 0px 5px;
 `;
 
-const DEFAULT_PAY_AMOUNT = 10;
+const defaultPayAmount = Number(process.env.DEFAULT_PAY_AMOUNT);
 
 export const Card = ({
   displayOverlay,
@@ -97,10 +97,10 @@ export const Card = ({
   title,
 }) => {
   const [image, setImage] = useState();
-  const [payAmount, setPayAmount] = useState(DEFAULT_PAY_AMOUNT);
+  const [payAmount, setPayAmount] = useState(defaultPayAmount);
 
   useEffect(() => {
-    setPayAmount(DEFAULT_PAY_AMOUNT);
+    setPayAmount(defaultPayAmount);
   }, [displayOverlay]);
 
   useEffect(() => {

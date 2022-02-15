@@ -1,3 +1,4 @@
+const DotenvWebpackPlugin = require('dotenv-webpack');
 const path = require('path');
 
 const config = {
@@ -37,6 +38,7 @@ const config = {
       },
     ],
   },
+  plugins: [new DotenvWebpackPlugin()],
 
   mode: 'development',
 };

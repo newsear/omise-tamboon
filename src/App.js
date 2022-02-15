@@ -36,8 +36,6 @@ const CardContainer = styled.div`
   }
 `;
 
-const API_URL = 'http://localhost:3001';
-
 const App = () => {
   const [charities, setCharities] = useState([]);
   const [currentDisplayOverlayId, setCurrentDisplayOverlayId] = useState();
@@ -59,13 +57,13 @@ const App = () => {
   }, []);
 
   const fetchCharities = () => {
-    fetch(`${API_URL}/charities`)
+    fetch(`${process.env.API_URL}/charities`)
       .then((resp) => resp.json())
       .then((charities) => setCharities(charities));
   };
 
   const fetchPayments = () => {
-    fetch(`${API_URL}/payments`)
+    fetch(`${process.env.API_URL}/payments`)
       .then((resp) => resp.json())
       .then((payments) => {
         const totalDonation = payments.reduce(
@@ -77,7 +75,7 @@ const App = () => {
   };
 
   const handlePay = async (charityId, payAmount) => {
-    await fetch(`${API_URL}/payments`, {
+    await fetch(`${process.env.API_URL}/payments`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: `{ "charitiesId": ${charityId}, "amount": ${payAmount}, "currency": "THB" }`,
