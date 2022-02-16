@@ -1,8 +1,8 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Charity, Payment } from './common/types';
-import { Card } from './components/card';
-import { summaryDonations } from './helpers/summary';
+import { Charity, Payment } from 'src/common/types';
+import { Card } from 'src/components/card';
+import { summaryDonations } from 'src/helpers/summary';
 
 const HeaderText = styled.h1`
   text-align: center;

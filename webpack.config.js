@@ -19,6 +19,9 @@ const config = {
     contentBase: 'public',
   },
   resolve: {
+    alias: {
+      src: path.resolve(__dirname, './src'),
+    },
     extensions: ['.js', '.ts', '.tsx'],
   },
   module: {
