@@ -1,9 +1,11 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { Charity, Payment } from 'src/common/types';
+import { Charity } from 'src/common/types';
 import { Card } from 'src/components/card';
 import { summaryDonations } from 'src/helpers/summary';
-import { httpClient } from './helpers/axios';
+import { useFetchCharities } from 'src/hooks/useFetchCharities';
+import { useFetchPayments } from 'src/hooks/useFetchPayments';
+import { usePayCharity } from 'src/hooks/usePayCharity';
 
 const HeaderText = styled.h1`
   text-align: center;
@@ -40,66 +42,39 @@ const CardContainer = styled.div`
 `;
 
 const App = () => {
-  const [charities, setCharities] = useState<Charity[]>(undefined);
-  const [totalDonation, setTotalDonation] = useState<Payment['amount']>(undefined);
+  const [fetchCharities, fetchCharitiesResult] = useFetchCharities({});
+  const [fetchPayments, fetchPaymentsResult] = useFetchPayments({});
+  const [payToCharity] = usePayCharity({
+    onCompleted: () => handlePayToCharityCompleted(),
+  });
+
   const [selectedCharityId, setSelectedCharityId] = useState<Charity['id']>(undefined);
 
-  const fetchCharities = async () => {
-    try {
-      const { data: charities } = await httpClient.request<Charity[]>({
-        method: 'get',
-        url: '/charities',
-      });
-      setCharities(charities);
-    } catch {
-      alert('Sorry, something went wrong, Please try again.');
-    }
-  };
-
-  const fetchPayments = async () => {
-    try {
-      const { data: payments } = await httpClient.request<Payment[]>({
-        method: 'get',
-        url: '/payments',
-      });
-      const totalDonation = summaryDonations(payments);
-      setTotalDonation(totalDonation);
-    } catch {
-      alert('Sorry, something went wrong, Please try again.');
-    }
-  };
-
-  const handlePay = async (charityId: number, payAmount: number) => {
-    try {
-      await httpClient.request({
-        method: 'post',
-        url: '/payments',
-        data: {
-          amount: payAmount,
-          charitiesId: charityId,
-          currency: 'THB',
-        },
-      });
-      await fetchPayments();
-      alert('Thank you for your donation');
-    } catch {
-      alert('Sorry, something went wrong, Please try again.');
-    }
-  };
+  const totalDonation = useMemo(
+    () => fetchPaymentsResult.data && summaryDonations(fetchPaymentsResult.data),
+    [fetchPaymentsResult.data]
+  );
 
   useEffect(() => {
     fetchCharities();
     fetchPayments();
   }, []);
 
+  const handlePayToCharityCompleted = () => {
+    fetchPayments();
+    alert('Thank you for your donation');
+  };
+
   return (
     <Fragment>
-      {charities && totalDonation ? (
+      {fetchCharitiesResult.loading || fetchPaymentsResult.loading ? (
+        <div>Loading..</div>
+      ) : (
         <div>
           <HeaderText>Tamboon React</HeaderText>
           <ParagraphText>All donations: {totalDonation}</ParagraphText>
           <CardContainer>
-            {charities.map((charity, index) => (
+            {fetchCharitiesResult.data?.map((charity, index) => (
               <Card
                 displayOverlay={charity.id === selectedCharityId}
                 id={charity.id}
@@ -107,13 +82,11 @@ const App = () => {
                 key={index}
                 setDisplayOverlay={setSelectedCharityId}
                 title={charity.name}
-                onSubmit={(payAmount) => handlePay(charity.id, payAmount)}
+                onSubmit={(payAmount) => payToCharity(charity.id, payAmount)}
               />
             ))}
           </CardContainer>
         </div>
-      ) : (
-        <div>Loading..</div>
       )}
     </Fragment>
   );
