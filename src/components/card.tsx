@@ -130,7 +130,7 @@ export const Card = ({
   }, [displayOverlay]);
 
   useEffect(() => {
-    import(`../assets/images/${imageName}`).then((image) => {
+    import(`src/assets/images/${imageName}`).then((image) => {
       console.log('image', image);
       setImageSrc(image.default);
     });
