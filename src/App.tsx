@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Charity, Payment } from 'src/common/types';
 import { Card } from 'src/components/card';
 import { summaryDonations } from 'src/helpers/summary';
+import { httpClient } from './helpers/axios';
 
 const HeaderText = styled.h1`
   text-align: center;
@@ -43,29 +44,47 @@ const App = () => {
   const [totalDonation, setTotalDonation] = useState<Payment['amount']>(undefined);
   const [selectedCharityId, setSelectedCharityId] = useState<Charity['id']>(undefined);
 
-  const fetchCharities = () => {
-    fetch(`${process.env.API_URL}/charities`)
-      .then((resp) => resp.json())
-      .then((charities: Charity[]) => setCharities(charities));
+  const fetchCharities = async () => {
+    try {
+      const { data: charities } = await httpClient.request<Charity[]>({
+        method: 'get',
+        url: '/charities',
+      });
+      setCharities(charities);
+    } catch {
+      alert('Sorry, something went wrong, Please try again.');
+    }
   };
 
-  const fetchPayments = () => {
-    fetch(`${process.env.API_URL}/payments`)
-      .then((resp) => resp.json())
-      .then((payments: Payment[]) => {
-        const totalDonation = summaryDonations(payments);
-        setTotalDonation(totalDonation);
+  const fetchPayments = async () => {
+    try {
+      const { data: payments } = await httpClient.request<Payment[]>({
+        method: 'get',
+        url: '/payments',
       });
+      const totalDonation = summaryDonations(payments);
+      setTotalDonation(totalDonation);
+    } catch {
+      alert('Sorry, something went wrong, Please try again.');
+    }
   };
 
   const handlePay = async (charityId: number, payAmount: number) => {
-    await fetch(`${process.env.API_URL}/payments`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: `{ "charitiesId": ${charityId}, "amount": ${payAmount}, "currency": "THB" }`,
-    });
-    fetchPayments();
-    alert('Thank you for your donation');
+    try {
+      await httpClient.request({
+        method: 'post',
+        url: '/payments',
+        data: {
+          amount: payAmount,
+          charitiesId: charityId,
+          currency: 'THB',
+        },
+      });
+      await fetchPayments();
+      alert('Thank you for your donation');
+    } catch {
+      alert('Sorry, something went wrong, Please try again.');
+    }
   };
 
   useEffect(() => {
