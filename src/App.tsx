@@ -67,7 +67,8 @@ const App = () => {
 
   return (
     <Fragment>
-      {fetchCharitiesResult.loading || fetchPaymentsResult.loading ? (
+      {(!fetchCharitiesResult.data && fetchCharitiesResult.loading) ||
+      (!fetchPaymentsResult.data && fetchPaymentsResult.loading) ? (
         <div>Loading..</div>
       ) : (
         <div>
