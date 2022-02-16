@@ -42,18 +42,15 @@ const CardContainer = styled.div`
 `;
 
 const App = () => {
-  const [fetchCharities, fetchCharitiesResult] = useFetchCharities({});
-  const [fetchPayments, fetchPaymentsResult] = useFetchPayments({});
+  const [fetchCharities, { loading: fetchCharitiesLoading, data: charities }] = useFetchCharities({});
+  const [fetchPayments, { loading: fetchPaymentsLoading, data: payments }] = useFetchPayments({});
   const [payToCharity] = usePayCharity({
     onBeforeComplete: () => handlePayToCharityCompleted(),
   });
 
   const [selectedCharityId, setSelectedCharityId] = useState<Charity['id']>(undefined);
 
-  const totalDonation = useMemo(
-    () => fetchPaymentsResult.data && summaryDonations(fetchPaymentsResult.data),
-    [fetchPaymentsResult.data]
-  );
+  const totalDonation = useMemo(() => payments && summaryDonations(payments), [payments]);
 
   useEffect(() => {
     fetchCharities();
@@ -67,15 +64,14 @@ const App = () => {
 
   return (
     <Fragment>
-      {(!fetchCharitiesResult.data && fetchCharitiesResult.loading) ||
-      (!fetchPaymentsResult.data && fetchPaymentsResult.loading) ? (
+      {(!charities && fetchCharitiesLoading) || (!payments && fetchPaymentsLoading) ? (
         <div>Loading..</div>
       ) : (
         <div>
           <HeaderText>Tamboon React</HeaderText>
           <ParagraphText>All donations: {totalDonation}</ParagraphText>
           <CardContainer>
-            {fetchCharitiesResult.data?.map((charity, index) => (
+            {charities?.map((charity, index) => (
               <Card
                 displayOverlay={charity.id === selectedCharityId}
                 id={charity.id}
