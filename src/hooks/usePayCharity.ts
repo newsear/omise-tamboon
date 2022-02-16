@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { HttpHookProps, httpClient } from 'src/helpers/axios';
 
-export const usePayCharity = ({ onCompleted }: HttpHookProps) => {
+export const usePayCharity = ({ onBeforeComplete }: HttpHookProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(undefined);
 
@@ -18,12 +18,12 @@ export const usePayCharity = ({ onCompleted }: HttpHookProps) => {
         },
       });
       setIsSuccess(true);
+      onBeforeComplete && onBeforeComplete();
     } catch {
       setIsSuccess(false);
       alert('Sorry, something went wrong, Please try again.');
     } finally {
       setLoading(false);
-      onCompleted && onCompleted();
     }
   }, []);
 

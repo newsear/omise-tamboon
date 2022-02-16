@@ -45,7 +45,7 @@ const App = () => {
   const [fetchCharities, fetchCharitiesResult] = useFetchCharities({});
   const [fetchPayments, fetchPaymentsResult] = useFetchPayments({});
   const [payToCharity] = usePayCharity({
-    onCompleted: () => handlePayToCharityCompleted(),
+    onBeforeComplete: () => handlePayToCharityCompleted(),
   });
 
   const [selectedCharityId, setSelectedCharityId] = useState<Charity['id']>(undefined);

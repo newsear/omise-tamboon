@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export type HttpHookProps = {
-  onCompleted?: () => any;
+  onBeforeComplete?: () => any;
 };
 
 export const httpClient = axios.create({

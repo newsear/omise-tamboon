@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Payment } from 'src/common/types';
 import { HttpHookProps, httpClient } from 'src/helpers/axios';
 
-export const useFetchPayments = ({ onCompleted }: HttpHookProps) => {
+export const useFetchPayments = ({ onBeforeComplete }: HttpHookProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<Payment[]>(undefined);
 
@@ -14,11 +14,11 @@ export const useFetchPayments = ({ onCompleted }: HttpHookProps) => {
         url: '/payments',
       });
       setData(payments);
+      onBeforeComplete && onBeforeComplete();
     } catch {
       alert('Sorry, something went wrong, Please try again.');
     } finally {
       setLoading(false);
-      onCompleted && onCompleted()
     }
   }, []);
 
