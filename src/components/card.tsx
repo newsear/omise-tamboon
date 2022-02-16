@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { Charity, Payment } from 'src/common/types';
 import styled from 'styled-components';
 
 type AmountProps = {
   checked: boolean;
-  value: number;
+  value: Payment['amount'];
   onSelect: () => void;
 };
 
 type CardProps = {
   displayOverlay: boolean;
-  id: number;
-  imageName: string;
-  setDisplayOverlay: Function;
-  title: string;
-  onSubmit: (payAmount: number) => void;
+  imageName: Charity['image'];
+  title: Charity['name'];
+  onCloseOverlay: () => void;
+  onDisplayOverlay: () => void;
+  onSubmit: (payAmount: Payment['amount']) => void;
 };
 
 const Container = styled.div`
@@ -116,14 +117,14 @@ const AmountRadio = ({ checked, value, onSelect }: AmountProps) => {
 
 export const Card = ({
   displayOverlay,
-  id,
   imageName,
-  setDisplayOverlay,
   title,
+  onCloseOverlay,
+  onDisplayOverlay,
   onSubmit,
 }: CardProps) => {
-  const [imageSrc, setImageSrc] = useState();
-  const [payAmount, setPayAmount] = useState(defaultPayAmount);
+  const [imageSrc, setImageSrc] = useState<string>();
+  const [payAmount, setPayAmount] = useState<Payment['amount']>(defaultPayAmount);
 
   useEffect(() => {
     setPayAmount(defaultPayAmount);
@@ -131,14 +132,13 @@ export const Card = ({
 
   useEffect(() => {
     import(`src/assets/images/${imageName}`).then((image) => {
-      console.log('image', image);
       setImageSrc(image.default);
     });
   }, []);
 
   const handleSubmit = () => {
     onSubmit(payAmount);
-    setDisplayOverlay(undefined);
+    onCloseOverlay();
   };
 
   return (
@@ -147,15 +147,15 @@ export const Card = ({
         <ImageContainer>{imageSrc && <Image src={imageSrc} />}</ImageContainer>
         <Detail>
           <Text>{title}</Text>
-          <Button onClick={() => setDisplayOverlay(id)}>Donate</Button>
+          <Button onClick={() => onDisplayOverlay()}>Donate</Button>
         </Detail>
       </Content>
       {displayOverlay && (
         <OverlayContainer>
-          <CloseButton onClick={() => setDisplayOverlay(undefined)}>X</CloseButton>
+          <CloseButton onClick={() => onCloseOverlay()}>X</CloseButton>
           <OverlayContent>
             <Column>
-              <Text>Select the amount to donate (USD)</Text>
+              <Text>Select the amount to donate (THB)</Text>
             </Column>
             <Column>
               {amountValues.map((amountValue, index) => (

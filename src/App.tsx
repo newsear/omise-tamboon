@@ -74,11 +74,11 @@ const App = () => {
             {charities?.map((charity, index) => (
               <Card
                 displayOverlay={charity.id === selectedCharityId}
-                id={charity.id}
                 imageName={charity.image}
                 key={index}
-                setDisplayOverlay={setSelectedCharityId}
                 title={charity.name}
+                onCloseOverlay={() => setSelectedCharityId(undefined)}
+                onDisplayOverlay={() => setSelectedCharityId(charity.id)}
                 onSubmit={(payAmount) => payToCharity(charity.id, payAmount)}
               />
             ))}
