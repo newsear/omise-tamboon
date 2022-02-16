@@ -1,6 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+type AmountProps = {
+  checked: boolean;
+  value: number;
+  onSelect: () => void;
+};
+
+type CardProps = {
+  displayOverlay: boolean;
+  id: number;
+  imageName: string;
+  setDisplayOverlay: Function;
+  title: string;
+  onSubmit: (payAmount: number) => void;
+};
+
 const Container = styled.div`
   border-radius: 5px;
   height: 250px;
@@ -88,15 +103,26 @@ const Radio = styled.label`
 
 const defaultPayAmount = Number(process.env.DEFAULT_PAY_AMOUNT);
 
+const amountValues = [10, 20, 50, 100, 200];
+
+const AmountRadio = ({ checked, value, onSelect }: AmountProps) => {
+  return (
+    <Radio>
+      <input type="radio" checked={checked} onChange={onSelect} />
+      <Text>{value}</Text>
+    </Radio>
+  );
+};
+
 export const Card = ({
   displayOverlay,
   id,
   imageName,
-  onSubmit,
   setDisplayOverlay,
   title,
-}) => {
-  const [image, setImage] = useState();
+  onSubmit,
+}: CardProps) => {
+  const [imageSrc, setImageSrc] = useState();
   const [payAmount, setPayAmount] = useState(defaultPayAmount);
 
   useEffect(() => {
@@ -105,7 +131,8 @@ export const Card = ({
 
   useEffect(() => {
     import(`../assets/images/${imageName}`).then((image) => {
-      setImage(image.default);
+      console.log('image', image);
+      setImageSrc(image.default);
     });
   }, []);
 
@@ -114,23 +141,10 @@ export const Card = ({
     setDisplayOverlay(undefined);
   };
 
-  const Amount = ({ value }) => {
-    return (
-      <Radio>
-        <input
-          type="radio"
-          checked={payAmount === value}
-          onChange={() => setPayAmount(value)}
-        />
-        <Text>{value}</Text>
-      </Radio>
-    );
-  };
-
   return (
     <Container>
       <Content>
-        <ImageContainer>{image && <Image src={image} />}</ImageContainer>
+        <ImageContainer>{imageSrc && <Image src={imageSrc} />}</ImageContainer>
         <Detail>
           <Text>{title}</Text>
           <Button onClick={() => setDisplayOverlay(id)}>Donate</Button>
@@ -138,19 +152,20 @@ export const Card = ({
       </Content>
       {displayOverlay && (
         <OverlayContainer>
-          <CloseButton onClick={() => setDisplayOverlay(undefined)}>
-            X
-          </CloseButton>
+          <CloseButton onClick={() => setDisplayOverlay(undefined)}>X</CloseButton>
           <OverlayContent>
             <Column>
               <Text>Select the amount to donate (USD)</Text>
             </Column>
             <Column>
-              <Amount value={10} />
-              <Amount value={20} />
-              <Amount value={50} />
-              <Amount value={100} />
-              <Amount value={200} />
+              {amountValues.map((amountValue, index) => (
+                <AmountRadio
+                  checked={payAmount === amountValue}
+                  key={index}
+                  value={amountValue}
+                  onSelect={() => setPayAmount(amountValue)}
+                />
+              ))}
             </Column>
             <Column>
               <Button onClick={() => handleSubmit()}>Pay</Button>

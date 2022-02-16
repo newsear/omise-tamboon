@@ -2,15 +2,14 @@ const DotenvWebpackPlugin = require('dotenv-webpack');
 const path = require('path');
 
 const config = {
-  entry: './src/index.js',
+  mode: 'development',
+  devtool: 'inline-source-map',
+  entry: './src/index.tsx',
   output: {
     publicPath: '/dist/',
     path: path.resolve(__dirname, 'dist'),
     filename: 'main.js',
   },
-
-  devtool: 'inline-source-map',
-
   devServer: {
     inline: true,
     host: '0.0.0.0',
@@ -19,28 +18,29 @@ const config = {
     disableHostCheck: true,
     contentBase: 'public',
   },
-
+  resolve: {
+    extensions: ['.js', '.ts', '.tsx'],
+  },
   module: {
     rules: [
       {
         test: /\.js$/,
-        exclude: [/node_modules/],
-        use: {
-          loader: 'babel-loader',
-        },
+        use: 'babel-loader',
+        exclude: /node_modules/,
       },
       {
         test: /\.jpg$/,
-        exclude: [/node_modules/],
-        use: {
-          loader: 'url-loader',
-        },
+        use: 'url-loader',
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.ts$|tsx/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       },
     ],
   },
   plugins: [new DotenvWebpackPlugin()],
-
-  mode: 'development',
 };
 
 module.exports = config;
